@@ -11,11 +11,41 @@ input.text-input {
     const titleInput = document.getElementById('bookmark-title');
     const urlInput = document.getElementById('bookmark-url');
     axios.post('/savebookmark', {'title': titleInput.value, 'url': urlInput.value})
-    .then(function (response) {
-      titleInput.value = '';
-      urlInput.value = '';
-    })
-    .catch(function (error) { console.log(error); });
+      .then(() => {
+        titleInput.value = '';
+        urlInput.value = '';
+        loadBookmark();
+      })
+      .catch((err) => console.log(err));
+  }
+
+  function loadBookmark() {
+    axios.get('/loadbookmark').then((response) => {
+      const table = document.getElementById('bookmark-table');
+      table.innerHTML = '';
+      for (let row of response.data) {
+        const tr = document.createElement('tr');
+
+        const tdTitle = document.createElement('td');
+        tdTitle.innerHTML = row.title;
+        tr.appendChild(tdTitle);
+
+        const tdURL = document.createElement('td');
+        const aURL = document.createElement('a');
+        aURL.href = row.url;
+        aURL.innerHTML = row.url;
+        tdURL.appendChild(aURL);
+        tr.appendChild(tdURL);
+
+        table.appendChild(tr);
+      }
+    });
+  }
+
+  function clearBookmark() {
+    axios.get('/clearbookmark')
+      .then(loadBookmark)
+      .catch((err) => {console.log(err);});
   }
 </script>
 <h4>Save your bookmarks!</h4>
@@ -24,4 +54,7 @@ input.text-input {
 <label>URL</label><br>
 <input type='text' id='bookmark-url' class='text-input'><br>
 <input type='submit' onClick='saveBookmark()' value ='Save'>
+<input type='submit' onClick='loadBookmark()' value ='Load'>
+<input type='submit' onClick='clearBookmark()' value ='Clear'>
+<table id='bookmark-table'></table>
 </html>
