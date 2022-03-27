@@ -1,0 +1,27 @@
+<!DOCTYPE HTML>
+<html>
+<style>
+input.text-input {
+  width: 300px;
+}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script>
+  function saveBookmark() {
+    const titleInput = document.getElementById('bookmark-title');
+    const urlInput = document.getElementById('bookmark-url');
+    axios.post('/savebookmark', {'title': titleInput.value, 'url': urlInput.value})
+    .then(function (response) {
+      titleInput.value = '';
+      urlInput.value = '';
+    })
+    .catch(function (error) { console.log(error); });
+  }
+</script>
+<h4>Save your bookmarks!</h4>
+<label>Title</label><br>
+<input type='text' id='bookmark-title' class='text-input'><br>
+<label>URL</label><br>
+<input type='text' id='bookmark-url' class='text-input'><br>
+<input type='submit' onClick='saveBookmark()' value ='Save'>
+</html>
