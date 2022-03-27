@@ -8,9 +8,16 @@ exports.dbCreate = function () {
   db.run("create table bookmarks (title text, url text)");
 }
 
-exports.dbInsert = function (title, url) {
+exports.dbInsert = function (title, url, cb) {
   db = new sqlite3.Database(DB_FILE);
-  db.run("insert into bookmarks values (?, ?)", title, url);
+  db.get("select * from bookmarks where url=?", url, (err, row) => {
+    if (typeof row == "undefined") {
+      db.run("insert into bookmarks values (?, ?)", title, url);
+      cb("");
+    } else {
+      cb("A bookmark with the same URL already exists.");
+    }
+  });
 }
 
 exports.dbQuery = function (cb) {
@@ -20,7 +27,12 @@ exports.dbQuery = function (cb) {
 
 exports.dbDelete = function () {
   db = new sqlite3.Database(DB_FILE);
-  db.all("delete from bookmarks");
+  db.run("delete from bookmarks");
+}
+
+exports.dbDeleteWhere = function (url) {
+  db = new sqlite3.Database(DB_FILE);
+  db.run("delete from bookmarks where url=?", url);
 }
 
 if (process.argv.length >= 3) {
@@ -36,6 +48,8 @@ if (process.argv.length >= 3) {
       for (let row of rows) {
         console.log(`${row.title}, ${row.url}`);
       }
-    });
+   });
+  } else if (cmd == 'delete') {
+    exports.dbDeleteWhere(process.argv[3]);
   }
 }

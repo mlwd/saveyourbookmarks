@@ -10,8 +10,13 @@ input.text-input {
   function saveBookmark() {
     const titleInput = document.getElementById('bookmark-title');
     const urlInput = document.getElementById('bookmark-url');
+    const messageDiv = document.getElementById('message-div');
     axios.post('/savebookmark', {'title': titleInput.value, 'url': urlInput.value})
-      .then(() => {
+      .then((response) => {
+        const message = response.data.message;
+        if (message) {
+          messageDiv.innerHTML = message;
+        }
         titleInput.value = '';
         urlInput.value = '';
         loadBookmark();
@@ -37,13 +42,25 @@ input.text-input {
         tdURL.appendChild(aURL);
         tr.appendChild(tdURL);
 
+        const tdDelete = document.createElement('td');
+        tdDelete.innerHTML = 'Delete';
+        tdDelete.setAttribute('onclick', 'deleteBookmarkWhere(\'' + row.url + '\')');
+        tr.appendChild(tdDelete);
+
         table.appendChild(tr);
       }
     });
   }
 
-  function clearBookmark() {
-    axios.get('/clearbookmark')
+  function deleteBookmark() {
+    axios.post('/deletebookmark')
+      .then(loadBookmark)
+      .catch((err) => {console.log(err);});
+  }
+
+  function deleteBookmarkWhere(url) {
+    console.log("Delete where url=" + url);
+    axios.post('/deletebookmarkwhere', {'url': url})
       .then(loadBookmark)
       .catch((err) => {console.log(err);});
   }
@@ -56,5 +73,6 @@ input.text-input {
 <input type='submit' onClick='saveBookmark()' value ='Save'>
 <input type='submit' onClick='loadBookmark()' value ='Load'>
 <input type='submit' onClick='clearBookmark()' value ='Clear'>
+<span id='message-div'></span>
 <table id='bookmark-table'></table>
 </html>
