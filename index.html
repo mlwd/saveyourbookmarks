@@ -1,10 +1,20 @@
 <!DOCTYPE HTML>
 <html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
 <style>
-input.text-input {
+#bookmark-table button {
+  width: 100px;
+}
+#bookmark-table input {
   width: 300px;
 }
 </style>
+</head>
+<body>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 <script>
   function saveBookmark() {
@@ -26,8 +36,10 @@ input.text-input {
 
   function loadBookmark() {
     axios.get('/loadbookmark').then((response) => {
-      const table = document.getElementById('bookmark-table');
-      table.innerHTML = '';
+      const tbody = document.getElementById('bookmark-table-body');
+      const trInput = document.getElementById('bookmark-table-body-row-input');
+      tbody.innerHTML = '';
+      tbody.appendChild(trInput);
       for (let row of response.data) {
         const tr = document.createElement('tr');
 
@@ -43,19 +55,16 @@ input.text-input {
         tr.appendChild(tdURL);
 
         const tdDelete = document.createElement('td');
-        tdDelete.innerHTML = 'Delete';
+        const btnDelete = document.createElement('button');
+        btnDelete.setAttribute('class', 'btn-sm btn-outline-primary');
+        btnDelete.innerHTML = 'Delete';
+        tdDelete.appendChild(btnDelete);
         tdDelete.setAttribute('onclick', 'deleteBookmarkWhere(\'' + row.url + '\')');
         tr.appendChild(tdDelete);
 
-        table.appendChild(tr);
+        tbody.appendChild(tr);
       }
     });
-  }
-
-  function deleteBookmark() {
-    axios.post('/deletebookmark')
-      .then(loadBookmark)
-      .catch((err) => {console.log(err);});
   }
 
   function deleteBookmarkWhere(url) {
@@ -64,15 +73,31 @@ input.text-input {
       .then(loadBookmark)
       .catch((err) => {console.log(err);});
   }
+
+  loadBookmark();
 </script>
+<div class="col-lg-8 mx-auto py-md-5">
 <h4>Save your bookmarks!</h4>
-<label>Title</label><br>
-<input type='text' id='bookmark-title' class='text-input'><br>
-<label>URL</label><br>
-<input type='text' id='bookmark-url' class='text-input'><br>
-<input type='submit' onClick='saveBookmark()' value ='Save'>
-<input type='submit' onClick='loadBookmark()' value ='Load'>
-<input type='submit' onClick='clearBookmark()' value ='Clear'>
 <span id='message-div'></span>
-<table id='bookmark-table'></table>
+
+<table id='bookmark-table' class='table'>
+<thead><tr>
+  <td>Title</td><td>Link</td><td>Action</td>
+</thead></tr>
+<tbody id='bookmark-table-body'>
+<tr id='bookmark-table-body-row-input'>
+  <td>
+    <input type='text' id='bookmark-title' class='form-control-sm' placeholder='Title'><br>
+  </td>
+  <td>
+    <input type='text' id='bookmark-url' class='form-control-sm' placeholder='Link'><br>
+  </td>
+  <td>
+    <button onClick='saveBookmark()' class='btn-sm btn-outline-primary'>Save</button>
+  </td>
+</tr>
+</tbody>
+</table>
+</div>
+</body>
 </html>
