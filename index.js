@@ -2,7 +2,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const path = require('path');
-const data = require('./data_pg');
+const data = require('./data');
 
 const app = express()
 const port = process.env.PORT || 5000

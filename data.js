@@ -1,42 +1,38 @@
 
-const sqlite3 = require('sqlite3');
-const fs = require('fs');
+const { Client } = require('pg');
+const process = require('process');
 
-const DB_FILE = 'data.db3';
+const DATABASE_URL = process.env.DATABASE_URL;
 
-exports.dbCreate = function () {
-  if (!fs.existsSync(DB_FILE)) {
-    console.log("Create non-existing data base file.");
-    db = new sqlite3.Database(DB_FILE);
-    db.run("create table bookmarks (title text primary key, url text)");
-  }
+function dbClient() {
+  return new Client({connectionString: DATABASE_URL,
+                     ssl: {rejectUnauthorized: false}});
 }
 
 exports.dbInsert = function (title, url, cb) {
-  db = new sqlite3.Database(DB_FILE);
-  db.get("select * from bookmarks where url=?", url, (err, row) => {
-    if (typeof row == "undefined") {
-      db.run("insert into bookmarks values (?, ?)", title, url);
-      cb("");
-    } else {
-      cb("A bookmark with the same URL already exists.");
-    }
+  const client = dbClient();
+  client.connect();
+  client.query("insert into bookmarks values ($1, $2)", [title, url], (err, res) => {
+    if (err) cb("Bookmark could not be inserted into the data base.");
+    cb("");
+    client.end();
   });
 }
 
 exports.dbQuery = function (cb) {
-  db = new sqlite3.Database(DB_FILE);
-  db.all("select * from bookmarks", (err, rows) => cb(rows));
+  const client = dbClient();
+  client.connect();
+  client.query("select * from bookmarks", (err, res) => {
+    if (err) throw err;
+    cb(res.rows);
+    client.end();
+  });
 }
 
 exports.dbDelete = function () {
-  db = new sqlite3.Database(DB_FILE);
-  db.run("delete from bookmarks");
 }
 
 exports.dbDeleteWhere = function (url) {
-  db = new sqlite3.Database(DB_FILE);
-  db.run("delete from bookmarks where url=?", url);
 }
 
 if (process.argv.length >= 3) {
