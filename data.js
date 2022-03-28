@@ -1,11 +1,15 @@
 
 const sqlite3 = require('sqlite3');
+const fs = require('fs');
 
 const DB_FILE = 'data.db3';
 
 exports.dbCreate = function () {
-  db = new sqlite3.Database(DB_FILE);
-  db.run("create table bookmarks (title text, url text)");
+  if (!fs.existsSync(DB_FILE)) {
+    console.log("Create non-existing data base file.");
+    db = new sqlite3.Database(DB_FILE);
+    db.run("create table bookmarks (title text, url text)");
+  }
 }
 
 exports.dbInsert = function (title, url, cb) {
