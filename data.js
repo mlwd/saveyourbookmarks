@@ -13,8 +13,11 @@ exports.dbInsert = function (title, url, cb) {
   const client = dbClient();
   client.connect();
   client.query("insert into bookmarks values ($1, $2)", [title, url], (err, res) => {
-    if (err) cb("Bookmark could not be inserted into the data base.");
-    cb("");
+    if (err) {
+      cb("Bookmark could not be inserted into the data base.");
+    } else {
+      cb("");
+    }
     client.end();
   });
 }
