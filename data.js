@@ -8,7 +8,7 @@ exports.dbCreate = function () {
   if (!fs.existsSync(DB_FILE)) {
     console.log("Create non-existing data base file.");
     db = new sqlite3.Database(DB_FILE);
-    db.run("create table bookmarks (title text, url text)");
+    db.run("create table bookmarks (title text primary key, url text)");
   }
 }
 
