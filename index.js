@@ -15,7 +15,8 @@ app.use(bodyParser.json());
 app.use(session({
   secret: process.env.DATABASE_URL,
   saveUninitialized: false,
-  resave: false
+  resave: false,
+  cookie: {secure: true},
 }));
 
 // Force secure https connections so that passwords can be transferred as plain text.
