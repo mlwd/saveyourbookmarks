@@ -26,12 +26,6 @@ app.get('/loadbookmark', (req, res) => {
   data.dbQuery((rows) => res.json(rows));
 });
 
-app.post('/deletebookmark', (req, res) => {
-  console.log('Delete all bookmarks');
-  data.dbDelete();
-  res.redirect('back');
-});
-
 app.post('/deletebookmarkwhere', (req, res) => {
   console.log('Delete bookmark: ' + req.body.url);
   data.dbDeleteWhere(req.body.url, () => res.redirect('back'));

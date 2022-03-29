@@ -32,17 +32,48 @@
 <script>
   const e = React.createElement;
 
-  class DeleteButton extends React.Component {
-    constructor (props) {
-      super(props);
+  class SaveButton extends React.Component {
+    render () {
+      return e(
+        'button',
+        { onClick: saveBookmark,
+          className: 'btn-sm btn-outline-primary' },
+        'Save'
+      );
     }
+  }
 
+  class DeleteButton extends React.Component {
     render () {
       return e(
         'button',
         { onClick: () => deleteBookmarkWhere(this.props.url),
           className: 'btn-sm btn-outline-primary' },
         'Delete'
+      );
+    }
+  }
+
+  class TableRow extends React.Component {
+    render () {
+      return e('tr', {},
+        e('td', {}, this.props.title),
+        e('td', {}, e('a', {href: this.props.url}, this.props.url)),
+        e('td', {}, e(DeleteButton, { url: this.props.url })),
+      );
+    }
+  }
+
+  class TableRowInput extends React.Component {
+    renderInput(id, placeholder) {
+      return e('input', { type: 'text', className: 'form-control-sm', id, placeholder });
+    }
+
+    render () {
+      return e('tr', {},
+        e('td', {}, this.renderInput('bookmark-title', 'Title')),
+        e('td', {}, this.renderInput('bookmark-url', 'Link')),
+        e('td', {}, e(SaveButton))
       );
     }
   }
@@ -66,30 +97,11 @@
 
   function loadBookmark() {
     axios.get('/loadbookmark').then((response) => {
-      const tbody = document.getElementById('bookmark-table-body');
-      const trInput = document.getElementById('bookmark-table-body-row-input');
-      tbody.innerHTML = '';
-      tbody.appendChild(trInput);
+      const tableRows = [e(TableRowInput)];
       for (let row of response.data) {
-        const tr = document.createElement('tr');
-
-        const tdTitle = document.createElement('td');
-        tdTitle.innerHTML = row.title;
-        tr.appendChild(tdTitle);
-
-        const tdURL = document.createElement('td');
-        const aURL = document.createElement('a');
-        aURL.href = row.url;
-        aURL.innerHTML = row.url;
-        tdURL.appendChild(aURL);
-        tr.appendChild(tdURL);
-
-        const tdDelete = document.createElement('td');
-        ReactDOM.render(e(DeleteButton, { url: row.url }), tdDelete);
-        tr.appendChild(tdDelete);
-
-        tbody.appendChild(tr);
+        tableRows.push(e(TableRow, { title: row.title, url: row.url }));
       }
+      ReactDOM.render(tableRows, document.getElementById('bookmark-table-body'));
     });
   }
 
@@ -103,27 +115,14 @@
   loadBookmark();
 </script>
 <div class="col-lg-8 mx-auto py-md-5">
-<h4>Save your bookmarks!</h4>
-<span id='message-div'></span>
-
-<table id='bookmark-table' class='table'>
-<thead><tr>
-  <td>Title</td><td>Link</td><td>Action</td>
-</thead></tr>
-<tbody id='bookmark-table-body'>
-<tr id='bookmark-table-body-row-input'>
-  <td>
-    <input type='text' id='bookmark-title' class='form-control-sm' placeholder='Title'><br>
-  </td>
-  <td>
-    <input type='text' id='bookmark-url' class='form-control-sm' placeholder='Link'><br>
-  </td>
-  <td>
-    <button onClick='saveBookmark()' class='btn-sm btn-outline-primary'>Save</button>
-  </td>
-</tr>
-</tbody>
-</table>
+  <h4>Save your bookmarks!</h4>
+  <span id='message-div'></span>
+  <table id='bookmark-table' class='table'>
+    <thead><tr>
+      <td>Title</td><td>Link</td><td>Action</td>
+    </thead></tr>
+    <tbody id='bookmark-table-body'></tbody>
+  </table>
 </div>
 </body>
 </html>

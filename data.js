@@ -32,9 +32,6 @@ exports.dbQuery = function (cb) {
   });
 }
 
-exports.dbDelete = function () {
-}
-
 exports.dbDeleteWhere = function (url, cb) {
   const client = dbClient();
   client.connect();
