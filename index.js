@@ -14,8 +14,20 @@ app.use(session({
   secret: process.env.DATABASE_URL,
   saveUninitialized: true,
   resave: false,
-  cookie: {secure: true},
 }));
+
+// Force secure https connections so that passwords can be transferred as plain text.
+if (process.env.ALLOW_HTTP == "true") {
+  console.log("Allow http.");
+} else {
+  console.log("Force https.");
+  app.use(function(request, response, next) {
+    if (!request.secure) {
+      return response.redirect("https://" + request.headers.host + request.url);
+    }
+    next();
+  })
+}
 
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json());
