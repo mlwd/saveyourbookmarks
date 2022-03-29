@@ -35,7 +35,14 @@ exports.dbQuery = function (cb) {
 exports.dbDelete = function () {
 }
 
-exports.dbDeleteWhere = function (url) {
+exports.dbDeleteWhere = function (url, cb) {
+  const client = dbClient();
+  client.connect();
+  client.query("delete from bookmarks where url=$1", [url], (err, res) => {
+    if (err) throw err;
+    cb();
+    client.end();
+  });
 }
 
 if (process.argv.length >= 3) {

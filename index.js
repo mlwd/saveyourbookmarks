@@ -34,8 +34,7 @@ app.post('/deletebookmark', (req, res) => {
 
 app.post('/deletebookmarkwhere', (req, res) => {
   console.log('Delete bookmark: ' + req.body.url);
-  data.dbDeleteWhere(req.body.url);
-  res.redirect('back');
+  data.dbDeleteWhere(req.body.url, () => res.redirect('back'));
 });
 
 app.listen(port, () => {
