@@ -9,15 +9,16 @@ const data = require('./data');
 const app = express()
 const port = process.env.PORT || 5000
 
-app.use(bodyParser.urlencoded({ extended: false }))
-app.use(bodyParser.json());
-
+app.set('trust proxy', 1);
 app.use(session({
   secret: process.env.DATABASE_URL,
   saveUninitialized: false,
   resave: false,
   cookie: {secure: true},
 }));
+
+app.use(bodyParser.urlencoded({ extended: false }))
+app.use(bodyParser.json());
 
 // Force secure https connections so that passwords can be transferred as plain text.
 if (process.env.ALLOW_HTPP != "true") {
