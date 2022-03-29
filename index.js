@@ -12,7 +12,7 @@ const port = process.env.PORT || 5000
 app.set('trust proxy', 1);
 app.use(session({
   secret: process.env.DATABASE_URL,
-  saveUninitialized: false,
+  saveUninitialized: true,
   resave: false,
   cookie: {secure: true},
 }));
