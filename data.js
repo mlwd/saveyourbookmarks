@@ -7,6 +7,19 @@ const DATABASE_URL = process.env.DATABASE_URL;
 const pool = new Pool({connectionString: DATABASE_URL,
                        ssl: {rejectUnauthorized: false}});
 
+exports.dbQueryUser = function (username, cb) {
+  pool.query("select salt, password from users where username=$1", [username],
+    (err, res) => {
+      if (err) throw err;
+      if (res.rows.length == 1) {
+        cb(username, res.rows[0].salt, res.rows[0].password);
+      } else {
+        cb(null, null, null);
+      }
+    }
+  );
+}
+
 exports.dbInsert = function (title, url, cb) {
   pool.query("insert into bookmarks values ($1, $2)", [title, url], (err, res) => {
     if (err) {

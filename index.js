@@ -1,6 +1,8 @@
 
 const express = require('express');
 const bodyParser = require('body-parser');
+const session = require('express-session');
+const bcrypt = require('bcrypt');
 const path = require('path');
 const data = require('./data');
 
@@ -10,9 +12,35 @@ const port = process.env.PORT || 5000
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json());
 
+app.use(session({
+  secret: process.env.DATABASE_URL,
+  saveUninitialized: false,
+  resave: false
+}));
+
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, '/index.html'));
+  if (!req.session.authenticated) {
+    res.redirect('/login');
+    return;
+  }
+  res.sendFile(path.join(__dirname, 'index.html'));
 })
+
+app.get('/login', (req, res) => {
+  res.sendFile(path.join(__dirname, 'login.html'));
+});
+
+app.post('/login', (req, res) => {
+  data.dbQueryUser(req.body.username, (username, salt, password) => {
+    req.session.authenticated = username == req.body.username &&
+                                password == bcrypt.hashSync(req.body.password, salt);
+    if (req.session.authenticated) {
+      res.redirect('/');
+    } else {
+      res.redirect('/login');
+    }
+  });
+});
 
 app.post('/savebookmark', (req, res) => {
   const title = req.body.title;
