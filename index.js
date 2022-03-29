@@ -20,14 +20,6 @@ app.use(session({
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json());
 
-// Force secure https connections so that passwords can be transferred as plain text.
-if (process.env.ALLOW_HTPP != "true") {
-  console.log("Force https.");
-  app.get('*', function(req, res) {
-    res.redirect('https://' + req.headers.host + req.url);
-  });
-}
-
 app.get('/', (req, res) => {
   if (!req.session.authenticated) {
     res.redirect('/login');
