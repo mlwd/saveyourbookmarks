@@ -10,6 +10,8 @@ const app = express()
 const port = process.env.PORT || 5000
 
 app.set('trust proxy', 1);
+app.set('view engine', 'ejs');
+
 app.use(session({
   secret: process.env.DATABASE_URL,
   saveUninitialized: true,
@@ -37,11 +39,11 @@ app.get('/', (req, res) => {
     res.redirect('/login');
     return;
   }
-  res.sendFile(path.join(__dirname, 'index.html'));
+  res.render('index.ejs');
 })
 
 app.get('/login', (req, res) => {
-  res.sendFile(path.join(__dirname, 'login.html'));
+  res.render('login.ejs');
 });
 
 app.post('/login', (req, res) => {
