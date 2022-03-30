@@ -4,51 +4,56 @@
 <%- include('header.ejs') %>
 </head>
 <body>
-<script>
-  const e = React.createElement;
-
+<script type='text/jsx'>
   class SaveButton extends React.Component {
     render () {
-      return e(
-        'button',
-        { onClick: saveBookmark,
-          className: 'btn-sm btn-outline-primary' },
-        'Save'
+      return (
+        <button onClick={saveBookmark} className='btn-sm btn-outline-primary'>
+          Save
+        </button>
       );
     }
   }
 
   class DeleteButton extends React.Component {
     render () {
-      return e(
-        'button',
-        { onClick: () => deleteBookmarkWhere(this.props.url),
-          className: 'btn-sm btn-outline-primary' },
-        'Delete'
+      return (
+        <button onClick={() => deleteBookmarkWhere(this.props.url)}
+                className='btn-sm btn-outline-primary'>
+          Delete
+        </button>
       );
     }
   }
 
   class TableRow extends React.Component {
     render () {
-      return e('tr', {},
-        e('td', {}, this.props.title),
-        e('td', {}, e('a', {href: this.props.url}, this.props.url)),
-        e('td', {}, e(DeleteButton, { url: this.props.url })),
+      return (
+        <tr>
+          <td>{this.props.title}</td>
+          <td><a href={this.props.url}>{this.props.url}</a></td>
+          <td><DeleteButton url={this.props.url}/></td>
+        </tr>
       );
     }
   }
 
   class TableRowInput extends React.Component {
     renderInput(id, placeholder) {
-      return e('input', { type: 'text', className: 'form-control-sm', id, placeholder });
+      return (
+        <input type='text' className='form-control-sm'
+               id={id} placeholder={placeholder}>
+        </input>
+      );
     }
 
     render () {
-      return e('tr', {},
-        e('td', {}, this.renderInput('bookmark-title', 'Title')),
-        e('td', {}, this.renderInput('bookmark-url', 'Link')),
-        e('td', {}, e(SaveButton))
+      return (
+        <tr>
+          <td>{this.renderInput('bookmark-title', 'Title')}</td>
+          <td>{this.renderInput('bookmark-url', 'Link')}</td>
+          <td><SaveButton/></td>
+        </tr>
       );
     }
   }
@@ -72,9 +77,9 @@
 
   function loadBookmark() {
     axios.get('/loadbookmark').then((response) => {
-      const tableRows = [e(TableRowInput)];
+      const tableRows = [<TableRowInput/>];
       for (let row of response.data) {
-        tableRows.push(e(TableRow, { title: row.title, url: row.url }));
+        tableRows.push(<TableRow title={row.title} url={row.url}/>);
       }
       ReactDOM.render(tableRows, document.getElementById('bookmark-table-body'));
     });
