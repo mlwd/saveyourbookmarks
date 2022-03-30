@@ -15,6 +15,16 @@
     }
   }
 
+  class SearchButton extends React.Component {
+    render () {
+      return (
+        <button onClick={this.props.searchBookmark} className='btn-sm btn-outline-primary'>
+          Search
+        </button>
+      );
+    }
+  }
+
   class DeleteButton extends React.Component {
     render () {
       return (
@@ -53,8 +63,33 @@
           <td>{this.renderInput('bookmark-title', 'Title')}</td>
           <td>{this.renderInput('bookmark-url', 'Link')}</td>
           <td><SaveButton/></td>
+          <td><SearchButton searchBookmark={this.props.searchBookmark}/></td>
         </tr>
       );
+    }
+  }
+
+  class TableBody extends React.Component {
+    constructor(props) {
+      super(props);
+      this.state = {search_title: '', search_url: ''};
+    }
+
+    searchBookmark() {
+      const search_title = document.getElementById('bookmark-title').value;
+      const search_url = document.getElementById('bookmark-url').value;
+      this.setState({search_title, search_url});
+    }
+
+    render() {
+      const tableRows = [<TableRowInput searchBookmark={() => this.searchBookmark()}/>];
+      for (let row of this.props.rows) {
+        if (row.title.includes(this.state.search_title) &&
+            row.url.includes(this.state.search_url)) {
+          tableRows.push(<TableRow title={row.title} url={row.url}/>);
+        }
+      }
+      return tableRows;
     }
   }
 
@@ -77,11 +112,7 @@
 
   function loadBookmark() {
     axios.get('/loadbookmark').then((response) => {
-      const tableRows = [<TableRowInput/>];
-      for (let row of response.data) {
-        tableRows.push(<TableRow title={row.title} url={row.url}/>);
-      }
-      ReactDOM.render(tableRows, document.getElementById('bookmark-table-body'));
+      ReactDOM.render(<TableBody rows={response.data}/>, document.getElementById('bookmark-table-body'));
     });
   }
 
