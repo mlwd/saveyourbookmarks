@@ -161,7 +161,9 @@
       const tableRows = [<TableRowInput title={this.state.search_title} url={this.state.search_url}
                                         searchBookmark={(t, u) => this.searchBookmark(t, u)}
                                         saveBookmark={(t, u) => this.saveBookmark(t, u)}/>];
-      for (let row of this.props.rows) {
+      const sorted_rows = this.props.rows.slice();
+      sorted_rows.sort((b1, b2) => b1.title.localeCompare(b2.title));
+      for (let row of sorted_rows) {
         if (row.title.includes(this.state.search_title) &&
             row.url.includes(this.state.search_url)) {
           tableRows.push(<TableRow title={row.title} url={row.url}
