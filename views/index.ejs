@@ -5,48 +5,78 @@
 </head>
 <body>
 <script type='text/jsx'>
-  class SaveButton extends React.Component {
-    render () {
-      return (
-        <button onClick={this.props.saveBookmark} className='btn-sm btn-outline-primary'>
-          Save
-        </button>
-      );
-    }
-  }
-
-  class SearchButton extends React.Component {
-    render () {
-      return (
-        <button onClick={this.props.searchBookmark} className='btn-sm btn-outline-primary'>
-          Search
-        </button>
-      );
-    }
-  }
-
-  class DeleteButton extends React.Component {
-    render () {
-      return (
-        <button onClick={() => deleteBookmarkWhere(this.props.url)}
-                className='btn-sm btn-outline-primary'>
-          Delete
-        </button>
-      );
-    }
-  }
 
   class TableRow extends React.Component {
+    constructor(props) {
+      super(props);
+      this.state = {edit: false};
+    }
+
+    startEdit() {
+      this.setState({edit: true});
+    }
+
+    cancelEdit() {
+      delete this.title;
+      delete this.url;
+      this.setState({edit: false});
+    }
+
+    saveEdit() {
+      if (!this.title && !this.url) return;
+      const save_title = this.title || this.props.title;
+      const save_url = this.url || this.props.url;
+      this.props.editBookmark(save_title, save_url, this.props.title, this.props.url);
+      this.cancelEdit();
+    }
+
+    changeTitle(e) {
+      this.title = e.target.value;
+    }
+
+    changeURL(e) {
+      this.url = e.target.value;
+    }
+
     render () {
+      if (this.state.edit) return this.renderEditable();
       return (
         <tr>
           <td>{this.props.title}</td>
           <td><a href={this.props.url}>{this.props.url}</a></td>
-          <td><DeleteButton url={this.props.url}/></td>
           <td>
-            <button onClick={() => this.props.editBookmark()}
+            <button onClick={() => deleteBookmarkWhere(this.props.title, this.props.url)}
+                   className='btn-sm btn-outline-primary'>
+              Delete
+            </button>
+          </td>
+          <td>
+            <button onClick={() => this.startEdit()}
                     className='btn-sm btn-outline-primary'>
               Edit
+            </button>
+          </td>
+        </tr>
+      );
+    }
+
+    renderEditable() {
+      return (
+        <tr>
+          <td><input type="text" defaultValue={this.props.title}
+                     onChange={(e) => this.changeTitle(e)}></input></td>
+          <td><input type="text" defaultValue={this.props.url}
+                     onChange={(e) => this.changeURL(e)}></input></td>
+          <td>
+            <button onClick={() => this.cancelEdit()}
+                    className='btn-sm btn-outline-primary'>
+              Cancel
+            </button>
+          </td>
+          <td>
+            <button onClick={() => this.saveEdit()}
+                    className='btn-sm btn-outline-primary'>
+              Save
             </button>
           </td>
         </tr>
@@ -68,14 +98,49 @@
   }
 
   class TableRowInput extends React.Component {
+
+    constructor(props) {
+      super(props);
+      this.state = {title: '', url: ''};
+    }
+
+    onChangeTitle(e) {
+      this.setState({title: e.target.value});
+    }
+
+    onChangeURL(e) {
+      this.setState({url: e.target.value});
+    }
+
+    startSearch() {
+      this.props.searchBookmark(this.state.title, this.state.url);
+    }
+
+    saveBookmark() {
+      this.props.saveBookmark(this.state.title, this.state.url);
+      this.setState({title: '', url: ''});
+    }
+
     render () {
       console.log("Table row input: " + this.props.title);
       return (
         <tr>
-          <td><TitleInput placeholder='Title' value={this.props.title} onChange={this.props.onChangeTitle}/></td>
-          <td><TitleInput placeholder='Link'  value={this.props.url  } onChange={this.props.onChangeURL}/></td>
-          <td><SaveButton saveBookmark={this.props.saveBookmark}/></td>
-          <td><SearchButton searchBookmark={this.props.searchBookmark}/></td>
+          <td><TitleInput placeholder='Title' value={this.state.title}
+                          onChange={(e) => this.onChangeTitle(e)}/></td>
+          <td><TitleInput placeholder='Link'  value={this.state.url  }
+                          onChange={(e) => this.onChangeURL(e)}/></td>
+          <td>
+            <button onClick={() => this.startSearch()}
+                    className='btn-sm btn-outline-primary'>
+              Search
+            </button>
+          </td>
+          <td>
+            <button onClick={() => this.saveBookmark()}
+                    className='btn-sm btn-outline-primary'>
+              Save
+            </button>
+          </td>
         </tr>
       );
     }
@@ -84,57 +149,54 @@
   class TableBody extends React.Component {
     constructor(props) {
       super(props);
-      this.state = {title: '', url: '', search_title: '', search_url: ''};
+      this.state = {search_title: '', search_url: ''};
     }
 
-    searchBookmark() {
-      const search_title = this.state.title;
-      const search_url = this.state.url;
-      this.setState({...this.state, search_title, search_url});
-    }
-
-    editBookmark(title, url) {
-      console.log("Edit bookmark " + title + ", " + url);
-      this.setState({...this.state, title, url});
-    }
-
-    onChangeTitle(e) {
-      console.log("new title = " + e.target.value);
-      this.setState({...this.state, title: e.target.value});
-    }
-
-    onChangeURL(e) {
-      console.log("new url = " + e.target.value);
-      this.setState({...this.state, url: e.target.value});
+    searchBookmark(search_title, search_url) {
+      this.setState({search_title, search_url});
     }
 
     render() {
-      console.log("Render state: " + this.state.title + ", " + this.state.url);
-      const tableRows = [<TableRowInput title={this.state.title} url={this.state.url}
-                                        onChangeTitle={e => this.onChangeTitle(e)}
-                                        onChangeURL={e => this.onChangeURL(e)}
-                                        saveBookmark={() => this.saveBookmark()}
-                                        searchBookmark={() => this.searchBookmark()}/>];
+      console.log("Render state: " + this.state.search_title + ", " + this.state.search_url);
+      const tableRows = [<TableRowInput title={this.state.search_title} url={this.state.search_url}
+                                        searchBookmark={(t, u) => this.searchBookmark(t, u)}
+                                        saveBookmark={(t, u) => this.saveBookmark(t, u)}/>];
       for (let row of this.props.rows) {
         if (row.title.includes(this.state.search_title) &&
             row.url.includes(this.state.search_url)) {
           tableRows.push(<TableRow title={row.title} url={row.url}
-                                   editBookmark={() => this.editBookmark(row.title, row.url)}/>);
+                                   saveBookmark={(t, u) => this.saveBookmark(t, u)}
+                                   editBookmark={(t, u, ot, ou) => this.editBookmark(t, u, ot, ou)} />);
         }
       }
       return tableRows;
     }
 
-    saveBookmark() {
+    saveBookmark(title, url) {
+      console.log("Save bookmark " + title + ", " + url);
+      if (!title || !url) return;
       const messageDiv = document.getElementById('message-div');
-      console.log("Save bookmark " + this.state.title + ", " + this.state.url);
-      axios.post('/savebookmark', {'title': this.state.title, 'url': this.state.url})
+      axios.post('/savebookmark', {title, url})
         .then((response) => {
           const message = response.data.message;
           if (message) {
             messageDiv.innerHTML = message;
           }
-          this.setState({...this.state, title: '', url: ''});
+          loadBookmark();
+        })
+        .catch((err) => console.log(err));
+    }
+
+    editBookmark(title, url, old_title, old_url) {
+      console.log("Edit bookmark " + title + ", " + url);
+      if (!title || !url) return;
+      const messageDiv = document.getElementById('message-div');
+      axios.post('/editbookmark', {title, url, old_title, old_url})
+        .then((response) => {
+          const message = response.data.message;
+          if (message) {
+            messageDiv.innerHTML = message;
+          }
           loadBookmark();
         })
         .catch((err) => console.log(err));
@@ -148,9 +210,8 @@
     });
   }
 
-  function deleteBookmarkWhere(url) {
-    console.log("Delete where url=" + url);
-    axios.post('/deletebookmarkwhere', {'url': url})
+  function deleteBookmarkWhere(title, url) {
+    axios.post('/deletebookmarkwhere', {title, url})
       .then(loadBookmark)
       .catch((err) => {console.log(err);});
   }

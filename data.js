@@ -37,8 +37,16 @@ exports.dbQuery = function (cb) {
   });
 }
 
-exports.dbDeleteWhere = function (url, cb) {
-  pool.query("delete from bookmarks where url=$1", [url], (err, res) => {
+exports.dbDeleteWhere = function (title, url, cb) {
+  pool.query("delete from bookmarks where title=$1 and url=$2", [title, url], (err, res) => {
+    if (err) throw err;
+    cb();
+  });
+}
+
+exports.dbUpdateWhere = function (title, url, old_title, old_url, cb) {
+  pool.query("update bookmarks set title=$1, url=$2 where title=$3 and url=$4",
+             [title, url, old_title, old_url], (err, res) => {
     if (err) throw err;
     cb();
   });
@@ -56,6 +64,6 @@ if (process.argv.length >= 3) {
       }
    });
   } else if (cmd == 'delete') {
-    exports.dbDeleteWhere(process.argv[3]);
+    exports.dbDeleteWhere(process.argv[3], process.argv[4]);
   }
 }
