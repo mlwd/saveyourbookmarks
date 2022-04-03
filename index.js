@@ -62,7 +62,7 @@ app.post('/savebookmark', (req, res) => {
   const title = req.body.title;
   const url = req.body.url;
   console.log(`Save bookmark (${title}, ${url})`);
-  data.dbInsert(title, url, (msg) => res.json({'message': msg}));
+  data.dbInsert(title, url, (msg) => res.send(msg));
 })
 
 app.post('/editbookmark', (req, res) => {

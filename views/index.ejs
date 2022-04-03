@@ -178,27 +178,33 @@
       console.log("Save bookmark " + title + ", " + url);
       if (!title || !url) return;
       const messageDiv = document.getElementById('message-div');
-      axios.post('/savebookmark', {title, url})
-        .then((response) => {
-          const message = response.data.message;
-          if (message) {
-            messageDiv.innerHTML = message;
-          }
+      const init = {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({title, url})
+      };
+      fetch('/savebookmark', init)
+        .then(response => response.text())
+        .then(message => {
+          messageDiv.innerHTML = message;
           loadBookmark();
         })
-        .catch((err) => console.log(err));
+        .catch(err => console.log(err));
     }
 
     editBookmark(title, url, old_title, old_url) {
       console.log("Edit bookmark " + title + ", " + url);
       if (!title || !url) return;
       const messageDiv = document.getElementById('message-div');
-      axios.post('/editbookmark', {title, url, old_title, old_url})
-        .then((response) => {
-          const message = response.data.message;
-          if (message) {
-            messageDiv.innerHTML = message;
-          }
+      const init = {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({title, url, old_title, old_url})
+      };
+      fetch('/editbookmark', init)
+        .then(response => response.text())
+        .then(message => {
+          messageDiv.innerHTML = message;
           loadBookmark();
         })
         .catch((err) => console.log(err));
@@ -207,15 +213,23 @@
   }
 
   function loadBookmark() {
-    axios.get('/loadbookmark').then((response) => {
-      ReactDOM.render(<TableBody rows={response.data}/>, document.getElementById('bookmark-table-body'));
-    });
+    fetch('/loadbookmark')
+      .then(response => response.json())
+      .then(data => {
+         const tableBody = document.getElementById('bookmark-table-body');
+         ReactDOM.render(<TableBody rows={data}/>, tableBody)
+      })
   }
 
   function deleteBookmarkWhere(title, url) {
-    axios.post('/deletebookmarkwhere', {title, url})
-      .then(loadBookmark)
-      .catch((err) => {console.log(err);});
+    const init = {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({title, url})
+    };
+    fetch('/deletebookmarkwhere', init)
+      .then(reponse => loadBookmark())
+      .catch(err => console.log(err));
   }
 
   loadBookmark();
