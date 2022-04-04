@@ -46,6 +46,11 @@ app.get('/login', (req, res) => {
   res.render('login.ejs');
 });
 
+app.get('/logout', (req, res) => {
+  req.session.authenticated = false;
+  res.render('login.ejs');
+});
+
 app.post('/login', (req, res) => {
   data.dbQueryUser(req.body.username, (username, salt, password) => {
     req.session.authenticated = username == req.body.username &&
@@ -74,6 +79,12 @@ app.post('/editbookmark', (req, res) => {
 app.get('/loadbookmark', (req, res) => {
   console.log("Load bookmarks.");
   data.dbQuery((rows) => res.json(rows));
+});
+
+app.get('/exportbookmark', (req, res) => {
+  console.log("Export bookmarks.");
+  data.dbQuery(rows => res.attachment("bookmarks.json")
+                          .send(JSON.stringify(rows, null, 4)));
 });
 
 app.post('/deletebookmarkwhere', (req, res) => {
