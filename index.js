@@ -71,9 +71,8 @@ app.post('/savebookmark', (req, res) => {
 })
 
 app.post('/editbookmark', (req, res) => {
-  data.dbUpdateWhere(req.body.title, req.body.url,
-                     req.body.old_title, req.body.old_url,
-                     (msg) => res.json({'message': msg}));
+  data.dbUpdateWhere(req.body.title, req.body.url, req.body.id,
+                     (msg) => res.send(msg));
 })
 
 app.get('/loadbookmark', (req, res) => {
@@ -88,8 +87,8 @@ app.get('/exportbookmark', (req, res) => {
 });
 
 app.post('/deletebookmarkwhere', (req, res) => {
-  console.log('Delete bookmark: ' + req.body.title + ", " + req.body.url);
-  data.dbDeleteWhere(req.body.title, req.body.url, () => res.redirect('back'));
+  console.log("Delete bookmark: id=" + req.body.id);
+  data.dbDeleteWhere(req.body.id, () => res.redirect('back'));
 });
 
 app.listen(port, () => {

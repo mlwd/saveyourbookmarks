@@ -26,7 +26,8 @@
       if (!this.title && !this.url) return;
       const save_title = this.title || this.props.title;
       const save_url = this.url || this.props.url;
-      this.props.editBookmark(save_title, save_url, this.props.title, this.props.url);
+      console.log("id = " + this.props.id);
+      this.props.editBookmark(save_title, save_url, this.props.id);
       this.cancelEdit();
     }
 
@@ -45,7 +46,7 @@
           <td>{this.props.title}</td>
           <td><a href={this.props.url}>{this.props.url}</a></td>
           <td>
-            <button onClick={() => deleteBookmarkWhere(this.props.title, this.props.url)}
+            <button onClick={() => deleteBookmarkWhere(this.props.id)}
                    className='btn-sm btn-outline-primary'>
               Delete
             </button>
@@ -166,9 +167,9 @@
       for (let row of sorted_rows) {
         if (row.title.includes(this.state.search_title) &&
             row.url.includes(this.state.search_url)) {
-          tableRows.push(<TableRow title={row.title} url={row.url}
+          tableRows.push(<TableRow id={row.id} title={row.title} url={row.url}
                                    saveBookmark={(t, u) => this.saveBookmark(t, u)}
-                                   editBookmark={(t, u, ot, ou) => this.editBookmark(t, u, ot, ou)} />);
+                                   editBookmark={(t, u, id) => this.editBookmark(t, u, id)} />);
         }
       }
       return tableRows;
@@ -192,14 +193,14 @@
         .catch(err => console.log(err));
     }
 
-    editBookmark(title, url, old_title, old_url) {
-      console.log("Edit bookmark " + title + ", " + url);
+    editBookmark(title, url, id) {
+      console.log("Edit bookmark: id=" + id + ", title=" + title + ", url=" + url);
       if (!title || !url) return;
       const messageDiv = document.getElementById('message-div');
       const init = {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({title, url, old_title, old_url})
+        body: JSON.stringify({title, url, id})
       };
       fetch('/editbookmark', init)
         .then(response => response.text())
@@ -221,11 +222,12 @@
       })
   }
 
-  function deleteBookmarkWhere(title, url) {
+  function deleteBookmarkWhere(id) {
+    console.log("Delete bookmark: id=" + id);
     const init = {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({title, url})
+      body: JSON.stringify({id})
     };
     fetch('/deletebookmarkwhere', init)
       .then(reponse => loadBookmark())

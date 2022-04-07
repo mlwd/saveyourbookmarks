@@ -21,7 +21,8 @@ exports.dbQueryUser = function (username, cb) {
 }
 
 exports.dbInsert = function (title, url, cb) {
-  pool.query("insert into bookmarks values ($1, $2)", [title, url], (err, res) => {
+  pool.query("insert into bookmarks (title, url) values ($1, $2)",
+    [title, url], (err, res) => {
     if (err) {
       cb("Bookmark could not be inserted into the data base.");
     } else {
@@ -31,39 +32,21 @@ exports.dbInsert = function (title, url, cb) {
 }
 
 exports.dbQuery = function (cb) {
-  pool.query("select * from bookmarks", (err, res) => {
+  pool.query("select id, title, url from bookmarks", (err, res) => {
     if (err) throw err;
     cb(res.rows);
   });
 }
 
-exports.dbDeleteWhere = function (title, url, cb) {
-  pool.query("delete from bookmarks where title=$1 and url=$2", [title, url], (err, res) => {
+exports.dbDeleteWhere = function (id, cb) {
+  pool.query("delete from bookmarks where id=$1", [id], (err, res) => {
     if (err) throw err;
     cb();
   });
 }
 
-exports.dbUpdateWhere = function (title, url, old_title, old_url, cb) {
-  pool.query("update bookmarks set title=$1, url=$2 where title=$3 and url=$4",
-             [title, url, old_title, old_url], (err, res) => {
-    if (err) throw err;
-    cb();
-  });
+exports.dbUpdateWhere = function (title, url, id, cb) {
+  pool.query("update bookmarks set title=$1, url=$2 where id=$3",
+      [title, url, id], (err, res) => {if (err) throw err; cb();});
 }
 
-if (process.argv.length >= 3) {
-  const cmd = process.argv[2];
-  if (cmd == 'insert') {
-    console.log('Insert into data base.');
-    exports.dbInsert(process.argv[3], process.argv[4]);
-  } else if (cmd == 'query') {
-    exports.dbQuery((rows) => {
-      for (let row of rows) {
-        console.log(`${row.title}, ${row.url}`);
-      }
-   });
-  } else if (cmd == 'delete') {
-    exports.dbDeleteWhere(process.argv[3], process.argv[4]);
-  }
-}
