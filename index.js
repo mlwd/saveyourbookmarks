@@ -66,9 +66,9 @@ app.post('/login', (req, res) => {
 app.post('/savebookmark', (req, res) => {
   const title = req.body.title;
   const url = req.body.url;
-  const list_id = req.body.list_id;
-  console.log(`Save bookmark (${title}, ${url}, ${list_id})`);
-  data.insertBookmark(title, url, list_id, (msg) => res.send(msg));
+  const listId = req.body.listId;
+  console.log(`Save bookmark (${title}, ${url}, ${listId})`);
+  data.insertBookmark(title, url, listId, (msg) => res.send(msg));
 })
 
 app.post('/editbookmark', (req, res) => {
@@ -86,7 +86,7 @@ app.get('/exportbookmark', (req, res) => {
     rows => res.attachment("bookmarks.json").send(JSON.stringify(rows, null, 4)));
 });
 
-app.post('/deletebookmarkwhere', (req, res) => {
+app.post('/deletebookmark', (req, res) => {
   console.log("Delete bookmark: id=" + req.body.id);
   data.dbDeleteWhere(req.body.id, () => res.redirect('back'));
 });
@@ -95,6 +95,18 @@ app.get('/bookmarklists', (req, res) => {
   console.log("Get bookmark lists.");
   data.getBookmarkLists(rows => res.json(rows));
 });
+
+app.post('/savebookmarklist', (req, res) => {
+  const name = req.body.name;
+  console.log('Save bookmark list: name=' + name);
+  data.insertBookmarkList(name, (msg) => res.send(msg));
+})
+
+app.post('/deletebookmarklist', (req, res) => {
+  const listId = req.body.listId;
+  console.log('Delete bookmark list: listId=' + listId);
+  data.deleteBookmarkList(listId, (msg) => res.send(msg));
+})
 
 app.listen(port, () => {
   console.log(`Listening on port ${port}.`);

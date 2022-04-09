@@ -78,18 +78,16 @@
     }
   }
 
-  class TitleInput extends React.Component {
-    render() {
-      return (
-        <input class="form-contro"
-               type='text'
-               placeholder={this.props.placeholder}
-               value={this.props.value}
-               contentEditable='true'
-               onChange={this.props.onChange}>
-        </input>
-      );
-    }
+  function ControlledInput(props) {
+    return (
+      <input class="form-control-sm"
+             type='text'
+             placeholder={props.placeholder}
+             value={props.value}
+             contentEditable='true'
+             onChange={props.onChange}>
+      </input>
+    );
   }
 
   class TableRowInput extends React.Component {
@@ -120,12 +118,12 @@
       return (
         <div class="row">
           <div class="col">
-            <TitleInput placeholder='Title' value={this.state.title}
-                        onChange={(e) => this.onChangeTitle(e)}/>
+            <ControlledInput placeholder='Title' value={this.state.title}
+                             onChange={(e) => this.onChangeTitle(e)}/>
           </div>
           <div class="col">
-            <TitleInput placeholder='Link'  value={this.state.url  }
-                        onChange={(e) => this.onChangeURL(e)}/>
+            <ControlledInput placeholder='Link'  value={this.state.url}
+                             onChange={(e) => this.onChangeURL(e)}/>
           </div>
           <div class="col-auto">
             <i class="bi bi-search mx-2" title="Search" onClick={() => this.startSearch()}></i>
@@ -151,12 +149,12 @@
     }
 
     componentDidUpdate(prevProps) {
-      if (prevProps.list_id !== this.props.list_id)
+      if (prevProps.listId !== this.props.listId)
         this.fetchBookmarks();
     }
 
     fetchBookmarks() {
-      fetch("/bookmarks/" + this.props.list_id)
+      fetch("/bookmarks/" + this.props.listId)
         .then(response => response.json())
         .then(bookmarks => this.setState({bookmarks}))
     }
@@ -164,7 +162,7 @@
     render() {
       const tableRows = [<TableRowInput title={this.state.search_title} url={this.state.search_url}
                                         searchBookmark={(t, u) => this.searchBookmark(t, u)}
-                                        saveBookmark={(t, u) => this.saveBookmark(t, u, this.props.list_id)}/>];
+                                        saveBookmark={(t, u) => this.saveBookmark(t, u, this.props.listId)}/>];
       const sorted_rows = this.state.bookmarks.slice();
       sorted_rows.sort((b1, b2) => b1.title.localeCompare(b2.title));
       for (let row of sorted_rows) {
@@ -179,14 +177,14 @@
       return tableRows;
     }
 
-    saveBookmark(title, url, list_id) {
-      console.log("Save bookmark: title=" + title + ", url=" + url + ", list_id=" + list_id);
+    saveBookmark(title, url, listId) {
+      console.log("Save bookmark: title=" + title + ", url=" + url + ", listId=" + listId);
       if (!title || !url) return;
       const messageDiv = document.getElementById('message-div');
       const init = {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({title, url, list_id})
+        body: JSON.stringify({title, url, listId})
       };
       fetch('/savebookmark', init)
         .then(response => response.text())
@@ -222,7 +220,7 @@
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({id})
       };
-      fetch('/deletebookmarkwhere', init)
+      fetch('/deletebookmark', init)
         .then(reponse => this.fetchBookmarks())
         .catch(err => console.log(err));
     }
@@ -234,50 +232,99 @@
   }
 
   function BookmarkLists(props) {
-    return props.rows.map(row =>
-      <div class="row mt-1">
-        <div class="col" onClick={() => props.setBookmarkList(row.id)}>{row.name}</div>
+    const [name, setName] = React.useState('');
+    const [bookmarkLists, setBookmarkLists] = React.useState(null);
+
+    function saveBookmarkList() {
+      console.log("Save bookmark list: name=" + name);
+      if (!name) return;
+      const messageDiv = document.getElementById('message-div');
+      const init = {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({name})
+      };
+      fetch('/savebookmarklist', init)
+        .then(response => response.text())
+        .then(message => {
+          messageDiv.innerHTML = message;
+          fetchBookmarkLists();
+        })
+        .catch(err => console.log(err));
+    }
+
+    React.useEffect(() => {
+      if (!bookmarkLists) {
+        fetchBookmarkLists();
+      }
+    });
+
+    function fetchBookmarkLists() {
+      fetch("/bookmarklists")
+        .then(response => response.json())
+        .then(lists => {
+          const firstListId = lists.length > 0 ? lists[0].id : null;
+          props.setBookmarkList(props.listId || firstListId);
+          setBookmarkLists(lists)
+        });
+    }
+
+    function deleteBookmarkList(listId) {
+      console.log("Delete bookmark list: listId=" + listId);
+      const init = {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({listId})
+      };
+      fetch('/deletebookmarklist', init)
+        .then(reponse => fetchBookmarkLists())
+        .catch(err => console.log(err));
+    }
+
+    const inputs = [
+      <div class="row">
+        <div class="col">
+          <ControlledInput placeholder='Link'  value={name}
+                           onChange={(e) => setName(e.target.value)}/>
+        </div>
         <div class="col-auto">
-          <i class="bi bi-trash mx-2" title="Delete" onClick={() => alert("Not yet implemented.")}></i>
+          <i class="bi bi-search mx-2" title="Search" onClick={() => alert("Not yet implementeed")}></i>
+          <i class="bi bi-save mx-2"   title="Save"   onClick={() => saveBookmarkList()}></i>
+        </div>
+      </div>
+    ];
+    return inputs.concat((bookmarkLists || []).map(row =>
+      <div class="row mt-1">
+        <div class="col bookmark-list-name" onClick={() => props.setBookmarkList(row.id)}>{row.name}</div>
+        <div class="col-auto">
+          <i class="bi bi-trash mx-2" title="Delete" onClick={() => deleteBookmarkList(row.id)}></i>
           <i class="bi bi-pencil mx-2" title="Edit" onClick={() => alert("Not yet implemented")}></i>
         </div>
       </div>
-    );
+    ));
   }
 
   class BookmarkBrowser extends React.Component {
     constructor (props) {
       super(props);
-      this.state = {bookmarklists: [], list_id: null};
+      this.state = {listId: null};
     }
 
-    setBookmarkList(id) {
-      console.log("Set bookmark list: " + id);
-      this.updateBookmarks(id);
-    }
-
-    componentDidMount() {
-      this.updateBookmarks();
-    }
-
-    updateBookmarks(list_id) {
-      fetch("/bookmarklists")
-        .then(response => response.json())
-        .then(bookmarklists => {
-           list_id = list_id || bookmarklists[0].id;
-           this.setState({bookmarklists, list_id});
-        });
+    setBookmarkList(listId) {
+      console.log("Set bookmark list: " + listId);
+      this.setState({listId});
     }
 
     render () {
       return (
         <div class="row">
-          <div class="col-3">
-            <BookmarkLists rows={this.state.bookmarklists} setBookmarkList={id => this.setBookmarkList(id)}/>
+          <div class="col-4">
+            <BookmarkLists listId={this.state.listId}
+                           setBookmarkList={id => this.setBookmarkList(id)}/>
           </div>
-          {this.state.list_id &&
-            <div class="col-9">
-              <Bookmarks list_id={this.state.list_id}/>
+          {this.state.listId &&
+            <div class="col-8">
+              <Bookmarks listId={this.state.listId}/>
             </div>
           }
         </div>
@@ -294,9 +341,15 @@
 </script>
 
 <div class="container mt-5">
-  <h3>Save your bookmarks!</h3>
-  <button onclick="exportBookmark()" class="btn-sm btn-outline-primary">Export</button>
-  <button href="/logout" class="btn-sm btn-outline-primary">Logout</button>
+  <div class="row">
+    <div class="col">
+      <h3>Save your bookmarks!</h3>
+    </div>
+    <div class="col-auto">
+      <button onclick="exportBookmark()" class="btn-sm btn-outline-primary">Export</button>
+      <button href="/logout" class="btn-sm btn-outline-primary">Logout</button>
+    </div>
+  </div>
   <div id="message-div"></div>
   <div id="bookmark-browser"></div>
 </div>

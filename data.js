@@ -60,6 +60,26 @@ exports.getBookmarkLists = function (cb) {
   });
 }
 
+exports.insertBookmarkList = function (name, cb) {
+  pool.query("insert into bookmark_lists (name) values ($1)", [name], (err, res) => {
+    if (err) {
+      cb("Bookmark list could not be inserted.");
+    } else {
+      cb("");
+    }
+  });
+}
+
+exports.deleteBookmarkList = function (id, cb) {
+  pool.query("delete from bookmark_lists where id=$1", [id], (err, res) => {
+    if (err) {
+      cb("Bookmark list could not be deleted.");
+    } else {
+      cb("");
+    }
+  });
+}
+
 exports.dbUpdateWhere = function (title, url, id, cb) {
   pool.query("update bookmarks set title=$1, url=$2 where id=$3",
       [title, url, id], (err, res) => {if (err) throw err; cb();});
