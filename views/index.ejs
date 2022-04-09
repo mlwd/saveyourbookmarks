@@ -26,7 +26,6 @@
       if (!this.title && !this.url) return;
       const save_title = this.title || this.props.title;
       const save_url = this.url || this.props.url;
-      console.log("id = " + this.props.id);
       this.props.editBookmark(save_title, save_url, this.props.id);
       this.cancelEdit();
     }
@@ -46,8 +45,10 @@
           <div class="col">{this.props.title}</div>
           <div class="col"><a href={this.props.url}>{this.props.url}</a></div>
           <div class="col-auto">
-            <i class="bi bi-trash mx-2" title="Delete" onClick={() => deleteBookmarkWhere(this.props.id)}></i>
-            <i class="bi bi-pencil mx-2" title="Edit" onClick={() => this.startEdit()}></i>
+            <i class="bi bi-trash mx-2" title="Delete"
+               onClick={() => this.props.deleteBookmark(this.props.id)}></i>
+            <i class="bi bi-pencil mx-2" title="Edit"
+               onClick={() => this.startEdit()}></i>
           </div>
         </div>
       );
@@ -116,7 +117,6 @@
     }
 
     render () {
-      console.log("Table row input: " + this.props.title);
       return (
         <div class="row">
           <div class="col">
@@ -136,48 +136,63 @@
     }
   }
 
-  class TableBody extends React.Component {
+  class Bookmarks extends React.Component {
     constructor(props) {
       super(props);
-      this.state = {search_title: '', search_url: ''};
+      this.state = {search_title: '', search_url: '', bookmarks: []};
     }
 
     searchBookmark(search_title, search_url) {
       this.setState({search_title, search_url});
     }
 
+    componentDidMount() {
+      this.fetchBookmarks();
+    }
+
+    componentDidUpdate(prevProps) {
+      if (prevProps.list_id !== this.props.list_id)
+        this.fetchBookmarks();
+    }
+
+    fetchBookmarks() {
+      fetch("/bookmarks/" + this.props.list_id)
+        .then(response => response.json())
+        .then(bookmarks => this.setState({bookmarks}))
+    }
+
     render() {
-      console.log("Render state: " + this.state.search_title + ", " + this.state.search_url);
       const tableRows = [<TableRowInput title={this.state.search_title} url={this.state.search_url}
                                         searchBookmark={(t, u) => this.searchBookmark(t, u)}
-                                        saveBookmark={(t, u) => this.saveBookmark(t, u)}/>];
-      const sorted_rows = this.props.rows.slice();
+                                        saveBookmark={(t, u) => this.saveBookmark(t, u, this.props.list_id)}/>];
+      const sorted_rows = this.state.bookmarks.slice();
       sorted_rows.sort((b1, b2) => b1.title.localeCompare(b2.title));
       for (let row of sorted_rows) {
         if (row.title.includes(this.state.search_title) &&
             row.url.includes(this.state.search_url)) {
           tableRows.push(<TableRow id={row.id} title={row.title} url={row.url}
                                    saveBookmark={(t, u) => this.saveBookmark(t, u)}
-                                   editBookmark={(t, u, id) => this.editBookmark(t, u, id)} />);
+                                   editBookmark={(t, u, id) => this.editBookmark(t, u, id)}
+                                   deleteBookmark={id => this.deleteBookmark(id)}/>);
         }
       }
       return tableRows;
     }
 
-    saveBookmark(title, url) {
-      console.log("Save bookmark " + title + ", " + url);
+    saveBookmark(title, url, list_id) {
+      console.log("Save bookmark: title=" + title + ", url=" + url + ", list_id=" + list_id);
       if (!title || !url) return;
       const messageDiv = document.getElementById('message-div');
       const init = {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({title, url})
+        body: JSON.stringify({title, url, list_id})
       };
       fetch('/savebookmark', init)
         .then(response => response.text())
         .then(message => {
           messageDiv.innerHTML = message;
-          loadBookmark();
+          this.fetchBookmarks();
         })
         .catch(err => console.log(err));
     }
@@ -195,54 +210,95 @@
         .then(response => response.text())
         .then(message => {
           messageDiv.innerHTML = message;
-          loadBookmark();
+          this.fetchBookmarks();
         })
         .catch((err) => console.log(err));
     }
 
-  }
-
-  function loadBookmark() {
-    fetch('/loadbookmark')
-      .then(response => response.json())
-      .then(data => {
-         const tableBody = document.getElementById('bookmark-table');
-         ReactDOM.render(<TableBody rows={data}/>, tableBody)
-      })
-  }
-
-  function deleteBookmarkWhere(id) {
-    console.log("Delete bookmark: id=" + id);
-    const init = {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({id})
-    };
-    fetch('/deletebookmarkwhere', init)
-      .then(reponse => loadBookmark())
-      .catch(err => console.log(err));
+    deleteBookmark(id) {
+      console.log("Delete bookmark: id=" + id);
+      const init = {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({id})
+      };
+      fetch('/deletebookmarkwhere', init)
+        .then(reponse => this.fetchBookmarks())
+        .catch(err => console.log(err));
+    }
   }
 
   function exportBookmark() {
+    console.log("Export bookmark.");
     window.location = "/exportbookmark";
   }
 
-  loadBookmark();
+  function BookmarkLists(props) {
+    return props.rows.map(row =>
+      <div class="row mt-1">
+        <div class="col" onClick={() => props.setBookmarkList(row.id)}>{row.name}</div>
+        <div class="col-auto">
+          <i class="bi bi-trash mx-2" title="Delete" onClick={() => alert("Not yet implemented.")}></i>
+          <i class="bi bi-pencil mx-2" title="Edit" onClick={() => alert("Not yet implemented")}></i>
+        </div>
+      </div>
+    );
+  }
+
+  class BookmarkBrowser extends React.Component {
+    constructor (props) {
+      super(props);
+      this.state = {bookmarklists: [], list_id: null};
+    }
+
+    setBookmarkList(id) {
+      console.log("Set bookmark list: " + id);
+      this.updateBookmarks(id);
+    }
+
+    componentDidMount() {
+      this.updateBookmarks();
+    }
+
+    updateBookmarks(list_id) {
+      fetch("/bookmarklists")
+        .then(response => response.json())
+        .then(bookmarklists => {
+           list_id = list_id || bookmarklists[0].id;
+           this.setState({bookmarklists, list_id});
+        });
+    }
+
+    render () {
+      return (
+        <div class="row">
+          <div class="col-3">
+            <BookmarkLists rows={this.state.bookmarklists} setBookmarkList={id => this.setBookmarkList(id)}/>
+          </div>
+          {this.state.list_id &&
+            <div class="col-9">
+              <Bookmarks list_id={this.state.list_id}/>
+            </div>
+          }
+        </div>
+      );
+    }
+  }
+
+  function renderBookmarkBrowser() {
+    const bookmarkBrowser = document.getElementById("bookmark-browser");
+    ReactDOM.render(<BookmarkBrowser/>, bookmarkBrowser);
+  }
+
+  renderBookmarkBrowser();
 </script>
 
 <div class="container mt-5">
   <h3>Save your bookmarks!</h3>
-  <button onclick="exportBookmark" class="btn-sm btn-outline-primary">Export</button>
+  <button onclick="exportBookmark()" class="btn-sm btn-outline-primary">Export</button>
   <button href="/logout" class="btn-sm btn-outline-primary">Logout</button>
-
-  <div class="row">
-    <div class="col-3">
-      <div id='bookmark-lists'></div>
-    </div>
-    <div class="col-9">
-      <div id='bookmark-table'></div>
-    </div>
-  </div>
+  <div id="message-div"></div>
+  <div id="bookmark-browser"></div>
 </div>
 
 </body>

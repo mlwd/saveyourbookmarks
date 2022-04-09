@@ -20,9 +20,9 @@ exports.dbQueryUser = function (username, cb) {
   );
 }
 
-exports.dbInsert = function (title, url, cb) {
-  pool.query("insert into bookmarks (title, url) values ($1, $2)",
-    [title, url], (err, res) => {
+exports.insertBookmark = function (title, url, list_id, cb) {
+  pool.query("insert into bookmarks (title, url, list_id) values ($1, $2, $3)",
+    [title, url, list_id], (err, res) => {
     if (err) {
       cb("Bookmark could not be inserted into the data base.");
     } else {
@@ -31,8 +31,16 @@ exports.dbInsert = function (title, url, cb) {
   });
 }
 
-exports.dbQuery = function (cb) {
+exports.getBookmarks = function (cb) {
   pool.query("select id, title, url from bookmarks", (err, res) => {
+    if (err) throw err;
+    cb(res.rows);
+  });
+}
+
+exports.getBookmarksWhere = function (listId, cb) {
+  pool.query("select id, title, url from bookmarks where list_id=$1", [listId],
+  (err, res) => {
     if (err) throw err;
     cb(res.rows);
   });
@@ -42,6 +50,13 @@ exports.dbDeleteWhere = function (id, cb) {
   pool.query("delete from bookmarks where id=$1", [id], (err, res) => {
     if (err) throw err;
     cb();
+  });
+}
+
+exports.getBookmarkLists = function (cb) {
+  pool.query("select id, name from bookmark_lists", (err, res) => {
+    if (err) console.log(err);
+    cb(res.rows);
   });
 }
 
