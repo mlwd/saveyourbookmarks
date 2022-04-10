@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "prestart": "npx babel src/app.jsx --out-file public/app.js",
+    "build": "npx babel src/app.jsx --out-file public/app.js",
     "start": "node index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -21,8 +21,7 @@
     "sqlite3": "^5.0.2"
   },
   "devDependencies": {
-    "@babel/cli": "^7.17.6",
-    "@babel/core": "^7.17.9",
-    "@babel/preset-react": "^7.16.7"
+    "babel-cli": "^6.26.0",
+    "babel-preset-react": "^6.24.1"
   }
 }
