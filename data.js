@@ -85,3 +85,11 @@ exports.dbUpdateWhere = function (title, url, id, cb) {
       [title, url, id], (err, res) => {if (err) throw err; cb();});
 }
 
+exports.updateBookmarkList = function(listName, listId, cb) {
+  pool.query("update bookmark_lists set name=$1 where id=$2", [listName, listId],
+    (err, res) => {
+      if (err) cb("Bookmark list could not be updated.");
+      else cb("");
+    }
+  );
+}

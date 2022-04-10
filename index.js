@@ -108,6 +108,11 @@ app.post('/deletebookmarklist', (req, res) => {
   data.deleteBookmarkList(listId, (msg) => res.send(msg));
 })
 
+app.post('/editbookmarklist', (req, res) => {
+  console.log("Update bookmark list: name=" + req.body.listName + ", id=" + req.body.listId);
+  data.updateBookmarkList(req.body.listName, req.body.listId, msg => res.send(msg));
+})
+
 app.listen(port, () => {
   console.log(`Listening on port ${port}.`);
 })

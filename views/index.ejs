@@ -6,6 +6,11 @@
 <body>
 <script type='text/jsx'>
 
+  function setMessage(message) {
+    const messageDiv = document.getElementById('message-div');
+    messageDiv.innerHTML = message;
+  }
+
   class TableRow extends React.Component {
     constructor(props) {
       super(props);
@@ -58,20 +63,20 @@
       return (
         <div class="row mt-1">
           <div class="col">
-            <input class="form-control" type="text"
+            <input class="form-control-sm" type="text"
                    defaultValue={this.props.title}
                    onChange={(e) => this.changeTitle(e)}>
             </input>
           </div>
           <div class="col">
-            <input class="form-control" type="text"
+            <input class="form-control-sm" type="text"
                    defaultValue={this.props.url}
                    onChange={(e) => this.changeURL(e)}>
             </input>
           </div>
           <div class="col-auto">
-            <i class="bi bi-x-lg mx-2" onClick={() => this.cancelEdit()}></i>
-            <i class="bi bi-check-lg mx-2" onClick={() => this.saveEdit()}></i>
+            <i class="bi bi-x-lg mx-2" title="Cancel" onClick={() => this.cancelEdit()}></i>
+            <i class="bi bi-check-lg mx-2" title="Save" onClick={() => this.saveEdit()}></i>
           </div>
         </div>
       );
@@ -180,7 +185,6 @@
     saveBookmark(title, url, listId) {
       console.log("Save bookmark: title=" + title + ", url=" + url + ", listId=" + listId);
       if (!title || !url) return;
-      const messageDiv = document.getElementById('message-div');
       const init = {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
@@ -189,7 +193,7 @@
       fetch('/savebookmark', init)
         .then(response => response.text())
         .then(message => {
-          messageDiv.innerHTML = message;
+          setMessage(message);
           this.fetchBookmarks();
         })
         .catch(err => console.log(err));
@@ -198,7 +202,6 @@
     editBookmark(title, url, id) {
       console.log("Edit bookmark: id=" + id + ", title=" + title + ", url=" + url);
       if (!title || !url) return;
-      const messageDiv = document.getElementById('message-div');
       const init = {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
@@ -207,7 +210,7 @@
       fetch('/editbookmark', init)
         .then(response => response.text())
         .then(message => {
-          messageDiv.innerHTML = message;
+          setMessage(message);
           this.fetchBookmarks();
         })
         .catch((err) => console.log(err));
@@ -233,12 +236,12 @@
 
   function BookmarkLists(props) {
     const [name, setName] = React.useState('');
+    const [searchName, setSearchName] = React.useState('');
     const [bookmarkLists, setBookmarkLists] = React.useState(null);
 
     function saveBookmarkList() {
       console.log("Save bookmark list: name=" + name);
       if (!name) return;
-      const messageDiv = document.getElementById('message-div');
       const init = {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
@@ -247,8 +250,9 @@
       fetch('/savebookmarklist', init)
         .then(response => response.text())
         .then(message => {
-          messageDiv.innerHTML = message;
+          setMessage(message);
           fetchBookmarkLists();
+          setName('');
         })
         .catch(err => console.log(err));
     }
@@ -263,8 +267,13 @@
       fetch("/bookmarklists")
         .then(response => response.json())
         .then(lists => {
-          const firstListId = lists.length > 0 ? lists[0].id : null;
-          props.setBookmarkList(props.listId || firstListId);
+          let newListId = null;
+          if (props.listId in lists.map(l => l.id)) {
+            newListId = props.listId;
+          } else if (lists.length > 0) {
+            newListId = lists[0].id;
+          }
+          props.setBookmarkList(newListId);
           setBookmarkLists(lists)
         });
     }
@@ -288,20 +297,69 @@
                            onChange={(e) => setName(e.target.value)}/>
         </div>
         <div class="col-auto">
-          <i class="bi bi-search mx-2" title="Search" onClick={() => alert("Not yet implementeed")}></i>
+          <i class="bi bi-search mx-2" title="Search" onClick={() => setSearchName(name)}></i>
           <i class="bi bi-save mx-2"   title="Save"   onClick={() => saveBookmarkList()}></i>
         </div>
       </div>
     ];
-    return inputs.concat((bookmarkLists || []).map(row =>
-      <div class="row mt-1">
-        <div class="col bookmark-list-name" onClick={() => props.setBookmarkList(row.id)}>{row.name}</div>
-        <div class="col-auto">
-          <i class="bi bi-trash mx-2" title="Delete" onClick={() => deleteBookmarkList(row.id)}></i>
-          <i class="bi bi-pencil mx-2" title="Edit" onClick={() => alert("Not yet implemented")}></i>
-        </div>
-      </div>
+    const filtered_bookmark_lists = (bookmarkLists || []).filter(row => row.name.includes(searchName));
+    return inputs.concat(filtered_bookmark_lists.map(row =>
+       <BookmarkList selectBookmarkList={() => props.setBookmarkList(row.id)}
+                     deleteBookmarkList={() => deleteBookmarkList(row.id)}
+                     fetchBookmarkLists={fetchBookmarkLists}
+                     listId={row.id} listName={row.name}/>
     ));
+  }
+
+  function BookmarkList(props) {
+    const [editable, setEditable] = React.useState(false);
+    const [listName, setListName] = React.useState(props.listName);
+
+    function changeListName(e) {
+      setListName(e.target.value);
+    }
+
+    function saveEditedBookmarkList() {
+      console.log("editedListName:" + listName);
+      const init = {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({listId: props.listId, listName})
+      };
+      fetch("/editbookmarklist", init)
+        .then(response => response.text())
+        .then(message => {
+          setMessage(message);
+          props.fetchBookmarkLists();
+          setEditable(false);
+        });
+    }
+
+    if (!editable) {
+      return (
+        <div class="row mt-1">
+          <div class="col bookmark-list-name" onClick={() => props.selectBookmarkList()}>{props.listName}</div>
+          <div class="col-auto">
+            <i class="bi bi-trash mx-2" title="Delete" onClick={props.deleteBookmarkList}></i>
+            <i class="bi bi-pencil mx-2" title="Edit" onClick={() => setEditable(true)}></i>
+          </div>
+        </div>
+      );
+    } else {
+      return (
+        <div class="row mt-1">
+          <div class="col">
+            <input class="form-control-sm" type="text"
+                   defaultValue={props.listName} onChange={changeListName}>
+            </input>
+          </div>
+          <div class="col-auto">
+            <i class="bi bi-x-lg mx-2" title="Cancel" onClick={() => setEditable(false)}></i>
+            <i class="bi bi-check-lg mx-2" title="Save" onClick={saveEditedBookmarkList}></i>
+          </div>
+        </div>
+      );
+    }
   }
 
   class BookmarkBrowser extends React.Component {
