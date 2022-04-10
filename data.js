@@ -34,7 +34,13 @@ exports.insertBookmark = function (title, url, list_id, cb) {
 exports.getBookmarks = function (cb) {
   pool.query("select id, title, url from bookmarks", (err, res) => {
     if (err) throw err;
-    cb(res.rows);
+    const new_cb = function(rows) {
+      cb({bookmark_lists: rows, bookmarks: res.rows});
+    };
+    pool.query("select id, name from bookmark_lists", (err, res) => {
+      if (err) throw err;
+      new_cb(res.rows);
+    });
   });
 }
 
@@ -46,7 +52,7 @@ exports.getBookmarksWhere = function (listId, cb) {
   });
 }
 
-exports.dbDeleteWhere = function (id, cb) {
+exports.deleteBookmark = function (id, cb) {
   pool.query("delete from bookmarks where id=$1", [id], (err, res) => {
     if (err) throw err;
     cb();

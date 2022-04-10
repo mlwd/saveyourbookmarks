@@ -90,7 +90,7 @@ app.get('/exportbookmark', (req, res) => {
 
 app.post('/deletebookmark', (req, res) => {
   console.log("Delete bookmark: id=" + req.body.id);
-  data.dbDeleteWhere(req.body.id, () => res.redirect('back'));
+  data.deleteBookmark(req.body.id, () => res.redirect('back'));
 });
 
 app.get('/bookmarklists', (req, res) => {
