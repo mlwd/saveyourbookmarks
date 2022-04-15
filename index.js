@@ -12,7 +12,6 @@ const port = process.env.PORT || 5000
 app.set('trust proxy', 1);
 app.set('view engine', 'ejs');
 
-app.use(express.static("public"));
 app.use(express.static("dist"));
 
 app.use(session({
