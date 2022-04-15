@@ -3,10 +3,13 @@ const path = require('path');
 
 module.exports = {
   mode: 'production',
-  entry: './src/app.jsx',
+  entry: {
+    index: './src/index.jsx',
+    login: './src/login.js'
+  },
   output: {
     path: path.resolve(__dirname, 'dist'),
-    filename: 'app.js'
+    filename: '[name].bundle.js'
   },
   module: {
     rules: [
@@ -19,6 +22,14 @@ module.exports = {
             presets: ['babel-preset-react']
           }
         }
+      },
+      {
+        test: /\.css$/,
+        use: ['style-loader', 'css-loader']
+      },
+      {
+        test: /\.(woff|woff2|eot|ttf|otf)$/i,
+        use: ['file-loader']
       }
     ]
   }
