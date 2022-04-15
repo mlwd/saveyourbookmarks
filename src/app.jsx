@@ -1,3 +1,7 @@
+
+import React from 'react';
+import ReactDOM from 'react-dom';
+
 function setMessage(message) {
   const messageDiv = document.getElementById('message-div');
   messageDiv.innerHTML = message;
@@ -384,7 +388,7 @@ class BookmarkBrowser extends React.Component {
 
 function renderBookmarkBrowser() {
   const bookmarkBrowser = document.getElementById("bookmark-browser");
-  ReactDOM.render(<BookmarkBrowser/>, bookmarkBrowser);
+  ReactDOM.createRoot(bookmarkBrowser).render(<BookmarkBrowser/>);
 }
 
 renderBookmarkBrowser();
