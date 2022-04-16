@@ -37,7 +37,7 @@ app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json());
 
 app.get('/', (req, res) => {
-  if (!req.session.authenticated) {
+  if (!req.session.user) {
     res.redirect('/login');
     return;
   }
@@ -49,18 +49,38 @@ app.get('/login', (req, res) => {
 });
 
 app.get('/logout', (req, res) => {
-  req.session.authenticated = false;
+  req.session.user = null;
   res.render('login.ejs');
 });
 
 app.post('/login', (req, res) => {
-  data.dbQueryUser(req.body.username, (username, salt, password) => {
-    req.session.authenticated = username == req.body.username &&
-                                password == bcrypt.hashSync(req.body.password, salt);
-    if (req.session.authenticated) {
+  const userName = req.body.username;
+  data.getUser(userName, (userId, salt, password) => {
+    if (userId && password == bcrypt.hashSync(req.body.password, salt)) {
+      req.session.user = {userId, userName};
       res.redirect('/');
     } else {
-      res.redirect('/login');
+      const message = "A user with the given name does not exist or the password is incorrect.";
+      res.render('login.ejs', {message});
+    }
+  });
+});
+
+app.get('/signup', (req, res) => {
+  res.render('signup.ejs');
+});
+
+app.post('/signup', (req, res) => {
+  const userName = req.body.username;
+  console.log("Add user: " + userName);
+  const salt = bcrypt.genSaltSync(10);
+  const hashedPassword = bcrypt.hashSync(req.body.password, salt);
+  data.insertUser(userName, salt, hashedPassword, (userId) => {
+    if (!userId) {
+      res.send("Sign up failed. Please choose another user name.");
+    } else {
+      req.session.user = {userId, userName};
+      res.redirect('/');
     }
   });
 });
@@ -69,8 +89,9 @@ app.post('/savebookmark', (req, res) => {
   const title = req.body.title;
   const url = req.body.url;
   const listId = req.body.listId;
-  console.log(`Save bookmark (${title}, ${url}, ${listId})`);
-  data.insertBookmark(title, url, listId, (msg) => res.send(msg));
+  const userId = req.session.user.userId;
+  console.log(`Save bookmark (${userId}, ${listId}, ${title}, ${url})`);
+  data.insertBookmark(userId, listId, title, url, (msg) => res.send(msg));
 })
 
 app.post('/editbookmark', (req, res) => {
@@ -80,11 +101,11 @@ app.post('/editbookmark', (req, res) => {
 
 app.get('/bookmarks/:listId', (req, res) => {
   console.log("Get bookmarks (list id: " + req.params.listId + ").");
-  data.getBookmarksWhere(req.params.listId, (rows) => res.json(rows));
+  data.getBookmarksWhere(req.session.user.userId, req.params.listId, (rows) => res.json(rows));
 });
 
-app.get('/exportbookmark', (req, res) => {
-  data.getBookmarks(
+app.get('/export', (req, res) => {
+  data.getBookmarks(req.session.user.userId,
     rows => res.attachment("bookmarks.json").send(JSON.stringify(rows, null, 4)));
 });
 
@@ -95,13 +116,13 @@ app.post('/deletebookmark', (req, res) => {
 
 app.get('/bookmarklists', (req, res) => {
   console.log("Get bookmark lists.");
-  data.getBookmarkLists(rows => res.json(rows));
+  data.getBookmarkLists(req.session.user.userId, rows => res.json(rows));
 });
 
 app.post('/savebookmarklist', (req, res) => {
   const name = req.body.name;
   console.log('Save bookmark list: name=' + name);
-  data.insertBookmarkList(name, (msg) => res.send(msg));
+  data.insertBookmarkList(req.session.user.userId, name, (msg) => res.send(msg));
 })
 
 app.post('/deletebookmarklist', (req, res) => {

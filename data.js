@@ -7,12 +7,12 @@ const DATABASE_URL = process.env.DATABASE_URL;
 const pool = new Pool({connectionString: DATABASE_URL,
                        ssl: {rejectUnauthorized: false}});
 
-exports.dbQueryUser = function (username, cb) {
-  pool.query("select salt, password from users where username=$1", [username],
+exports.getUser = function (username, cb) {
+  pool.query("select id, salt, password from users where username=$1", [username],
     (err, res) => {
       if (err) throw err;
       if (res.rows.length == 1) {
-        cb(username, res.rows[0].salt, res.rows[0].password);
+        cb(res.rows[0].id, res.rows[0].salt, res.rows[0].password);
       } else {
         cb(null, null, null);
       }
@@ -20,33 +20,51 @@ exports.dbQueryUser = function (username, cb) {
   );
 }
 
-exports.insertBookmark = function (title, url, list_id, cb) {
-  pool.query("insert into bookmarks (title, url, list_id) values ($1, $2, $3)",
-    [title, url, list_id], (err, res) => {
+exports.insertUser = function (userName, salt, password, cb) {
+  pool.query("insert into users (userName, salt, password) values ($1, $2, $3)",
+    [userName, salt, password], (err, res) => {
     if (err) {
-      cb("Bookmark could not be inserted into the data base.");
+      cb(null);
+    } else {
+      pool.query("select id from users where username=$1",
+        [userName], (err, res) => {
+        if (err) {
+          cb(null);
+        } else {
+          cb(res.rows[0].id);
+        }
+      });
+    }
+  });
+};
+
+exports.insertBookmark = function (userId, listId, title, url, cb) {
+  pool.query("insert into bookmarks (user_id, list_id, title, url) values ($1, $2, $3, $4)",
+    [userId, listId, title, url], (err, res) => {
+    if (err) {
+      cb("bookmark could not be inserted into the data base.");
     } else {
       cb("");
     }
   });
 }
 
-exports.getBookmarks = function (cb) {
-  pool.query("select id, title, url from bookmarks", (err, res) => {
+exports.getBookmarks = function (userId, cb) {
+  pool.query("select id, title, url from bookmarks where user_id=$1", [userId], (err, res) => {
     if (err) throw err;
     const new_cb = function(rows) {
       cb({bookmark_lists: rows, bookmarks: res.rows});
     };
-    pool.query("select id, name from bookmark_lists", (err, res) => {
+    pool.query("select id, name from bookmark_lists where user_id=$1", [userId], (err, res) => {
       if (err) throw err;
       new_cb(res.rows);
     });
   });
 }
 
-exports.getBookmarksWhere = function (listId, cb) {
-  pool.query("select id, title, url from bookmarks where list_id=$1", [listId],
-  (err, res) => {
+exports.getBookmarksWhere = function (userId, listId, cb) {
+  pool.query("select id, title, url from bookmarks where user_id=$1 and list_id=$2",
+  [userId, listId], (err, res) => {
     if (err) throw err;
     cb(res.rows);
   });
@@ -59,15 +77,17 @@ exports.deleteBookmark = function (id, cb) {
   });
 }
 
-exports.getBookmarkLists = function (cb) {
-  pool.query("select id, name from bookmark_lists", (err, res) => {
+exports.getBookmarkLists = function (userId, cb) {
+  pool.query("select id, name from bookmark_lists where user_id=$1",
+  [userId], (err, res) => {
     if (err) console.log(err);
     cb(res.rows);
   });
 }
 
-exports.insertBookmarkList = function (name, cb) {
-  pool.query("insert into bookmark_lists (name) values ($1)", [name], (err, res) => {
+exports.insertBookmarkList = function (userId, name, cb) {
+  pool.query("insert into bookmark_lists (user_id, name) values ($1, $2)",
+  [userId, name], (err, res) => {
     if (err) {
       cb("Bookmark list could not be inserted.");
     } else {

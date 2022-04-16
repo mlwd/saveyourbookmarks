@@ -5,6 +5,12 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 
+document.getElementById('exportButton').addEventListener(
+  'click', () => {window.location = '/export';})
+
+document.getElementById('logoutButton').addEventListener(
+  'click', () => {window.location = '/logout';})
+
 function setMessage(message) {
   const messageDiv = document.getElementById('message-div');
   messageDiv.innerHTML = message;
@@ -226,11 +232,6 @@ class Bookmarks extends React.Component {
       .then(reponse => this.fetchBookmarks())
       .catch(err => console.log(err));
   }
-}
-
-function exportBookmark() {
-  console.log("Export bookmark.");
-  window.location = "/exportbookmark";
 }
 
 function BookmarkLists(props) {
