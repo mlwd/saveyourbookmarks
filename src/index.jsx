@@ -6,10 +6,19 @@ import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 
 document.getElementById('exportButton').addEventListener(
-  'click', () => {window.location = '/export';})
+  'click',
+  () => {window.location = '/export';}
+);
 
 document.getElementById('logoutButton').addEventListener(
-  'click', () => {window.location = '/logout';})
+  'click',
+  () => {window.location = '/logout';}
+);
+
+document.getElementById('settingsButton').addEventListener(
+  'click',
+  () => {window.location = '/settings';}
+);
 
 function setMessage(message) {
   const messageDiv = document.getElementById('message-div');

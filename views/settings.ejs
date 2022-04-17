@@ -1,0 +1,29 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<%- include('header.ejs') %>
+</head>
+<body>
+<div class="container mt-5">
+  <div class="row">
+    <div class="col">
+      <h3>Save your bookmarks!</h3>
+    </div>
+  </div>
+  <div id="settings">
+    <div>User name: <%= locals.userName %></div>
+    <button id="deleteUserButton" class="btn-sm btn-outline-primary">Delete user</button>
+    <dialog id="deleteUserDialog">
+      <div class="container">
+      Are you sure that you want to delete your account?
+      <form method="dialog">
+        <button value="cancel">Cancel</button>
+        <button value="confirm">Confirm</button>
+      </form>
+      </div>
+    </dialog>
+  </div>
+</div>
+<script src="settings.bundle.js"></script>
+</body>
+</html>

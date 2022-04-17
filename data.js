@@ -38,6 +38,12 @@ exports.insertUser = function (userName, salt, password, cb) {
   });
 };
 
+exports.deleteUser = function (userId) {
+  pool.query("delete from users where id=$1", [userId], (err, res) => {
+    if (err) throw err;
+  });
+}
+
 exports.insertBookmark = function (userId, listId, title, url, cb) {
   pool.query("insert into bookmarks (user_id, list_id, title, url) values ($1, $2, $3, $4)",
     [userId, listId, title, url], (err, res) => {

@@ -39,8 +39,7 @@ app.use(bodyParser.json());
 
 app.get('/', (req, res) => {
   if (!req.session.user) {
-    res.redirect('/login');
-    return;
+    return res.redirect('/login');
   }
   res.render('index.ejs');
 })
@@ -68,7 +67,7 @@ app.post('/login', (req, res) => {
 });
 
 app.get('/signup', (req, res) => {
-  res.render('signup.ejs');
+  res.render('signup.ejs', {message: 'Fill out the form to create a new account.'});
 });
 
 app.post('/signup', (req, res) => {
@@ -78,12 +77,29 @@ app.post('/signup', (req, res) => {
   const hashedPassword = bcrypt.hashSync(req.body.password, salt);
   data.insertUser(userName, salt, hashedPassword, (userId) => {
     if (!userId) {
-      res.send("Sign up failed. Please choose another user name.");
-    } else {
-      req.session.user = {userId, userName};
-      res.redirect('/');
+      return res.render("signup.ejs",
+          {message: "Sign up failed. Please choose another user name."});
     }
+    req.session.user = {userId, userName};
+    res.redirect('/');
   });
+});
+
+app.get('/settings', (req, res) => {
+  if (!req.session.user) {
+    return res.redirect('/login');
+  }
+  res.render('settings.ejs', {userName: req.session.user.userName});
+});
+
+app.get("/deleteuser", (req, res) => {
+  if (!req.session.user) {
+    return res.redirect('/login');
+  }
+  console.log("Delete user: " + req.session.user.userName);
+  data.deleteUser(req.session.user.userId);
+  req.session.user = null;
+  res.redirect("/login");
 });
 
 app.post('/savebookmark', (req, res) => {

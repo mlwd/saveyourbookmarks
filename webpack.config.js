@@ -5,7 +5,8 @@ module.exports = {
   mode: 'production',
   entry: {
     index: './src/index.jsx',
-    login: './src/login.js'
+    login: './src/login.js',
+    settings: './src/settings.js'
   },
   output: {
     path: path.resolve(__dirname, 'dist'),
