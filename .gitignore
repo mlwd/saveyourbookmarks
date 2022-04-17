@@ -1,2 +1,4 @@
 *swp
 public/app.js
+dist
+node_modules

@@ -1,0 +1,19 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<%- include('header.ejs') %>
+</head>
+<body>
+<div class="col-lg-8 mx-auto py-md-5">
+  <h4>Save your bookmarks!</h4>
+  <form action="/signup" method="post">
+    <label>User name</label><br>
+    <input type="text" name="username"><br>
+    <label>Password</label><br>
+    <input type="password" name="password"><br>
+    <button type="submit" class="btn-sm btn-outline-primary">Sign up</button>
+  </form>
+</div>
+<script src="login.bundle.js"></script>
+</body>
+</html>
