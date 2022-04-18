@@ -1,4 +1,4 @@
-import 'bootstrap/dist/css/bootstrap.min.css';
+import './header.scss';
 
 const deleteUserButton = document.getElementById("deleteUserButton");
 const deleteUserDialog = document.getElementById("deleteUserDialog");

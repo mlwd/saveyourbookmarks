@@ -1,13 +1,13 @@
 
 import React from 'react';
 import ReactDOM from 'react-dom';
-import 'bootstrap/dist/css/bootstrap.min.css';
 import trashIcon from 'bootstrap-icons/icons/trash.svg';
 import editIcon from 'bootstrap-icons/icons/pencil.svg';
 import saveIcon from 'bootstrap-icons/icons/save.svg';
 import checkIcon from 'bootstrap-icons/icons/check-lg.svg';
 import cancelIcon from 'bootstrap-icons/icons/x-lg.svg';
 import searchIcon from 'bootstrap-icons/icons/search.svg';
+import './header.scss';
 
 function setMessage(message) {
   const messageDiv = document.getElementById('message-div');
