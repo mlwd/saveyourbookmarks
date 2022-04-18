@@ -9,21 +9,6 @@ import checkIcon from 'bootstrap-icons/icons/check-lg.svg';
 import cancelIcon from 'bootstrap-icons/icons/x-lg.svg';
 import searchIcon from 'bootstrap-icons/icons/search.svg';
 
-document.getElementById('exportButton').addEventListener(
-  'click',
-  () => {window.location = '/export';}
-);
-
-document.getElementById('logoutButton').addEventListener(
-  'click',
-  () => {window.location = '/logout';}
-);
-
-document.getElementById('settingsButton').addEventListener(
-  'click',
-  () => {window.location = '/settings';}
-);
-
 function setMessage(message) {
   const messageDiv = document.getElementById('message-div');
   messageDiv.innerHTML = message;
@@ -410,16 +395,35 @@ class BookmarkBrowser extends React.Component {
 
   render () {
     return (
-      <div class="row">
-        <div class="col-4">
-          <BookmarkLists listId={this.state.listId}
-                         setBookmarkList={id => this.setBookmarkList(id)}/>
-        </div>
-        {this.state.listId &&
-          <div class="col-8">
-            <Bookmarks listId={this.state.listId}/>
+      <div class="container mt-5">
+        <div class="row">
+          <div class="col">
+            <h3>Save your bookmarks!</h3>
           </div>
-        }
+          <div class="col-auto">
+            <button class="btn-sm btn-outline-primary" onClick={() => {window.location = "/export"}}>
+              Export
+            </button>
+            <button class="btn-sm btn-outline-primary" onClick={() => {window.location = "/logout"}}>
+              Logout
+            </button>
+            <button class="btn-sm btn-outline-primary" onClick={() => {window.location = "/settings"}}>
+              Settings
+            </button>
+          </div>
+        </div>
+        <div id="message-div"></div>
+        <div class="row">
+          <div class="col-4">
+            <BookmarkLists listId={this.state.listId}
+                           setBookmarkList={id => this.setBookmarkList(id)}/>
+          </div>
+          {this.state.listId &&
+            <div class="col-8">
+              <Bookmarks listId={this.state.listId}/>
+            </div>
+          }
+        </div>
       </div>
     );
   }

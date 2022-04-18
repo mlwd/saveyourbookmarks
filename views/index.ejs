@@ -3,21 +3,6 @@
 <head>
 <%- include('header.ejs') %>
 </head>
-<body>
-<div class="container mt-5">
-  <div class="row">
-    <div class="col">
-      <h3>Save your bookmarks!</h3>
-    </div>
-    <div class="col-auto">
-      <button id="exportButton" class="btn-sm btn-outline-primary">Export</button>
-      <button id="logoutButton" class="btn-sm btn-outline-primary">Logout</button>
-      <button id="settingsButton" class="btn-sm btn-outline-primary">Settings</button>
-    </div>
-  </div>
-  <div id="message-div"></div>
-  <div id="bookmark-browser"></div>
-</div>
+<body id="bookmark-browser"></body>
 <script src="index.bundle.js"></script>
-</body>
 </html>
