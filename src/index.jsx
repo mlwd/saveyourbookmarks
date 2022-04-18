@@ -2,8 +2,12 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import 'bootstrap/dist/js/bootstrap.bundle.min.js';
-import 'bootstrap-icons/font/bootstrap-icons.css';
+import trashIcon from 'bootstrap-icons/icons/trash.svg';
+import editIcon from 'bootstrap-icons/icons/pencil.svg';
+import saveIcon from 'bootstrap-icons/icons/save.svg';
+import checkIcon from 'bootstrap-icons/icons/check-lg.svg';
+import cancelIcon from 'bootstrap-icons/icons/x-lg.svg';
+import searchIcon from 'bootstrap-icons/icons/search.svg';
 
 document.getElementById('exportButton').addEventListener(
   'click',
@@ -23,6 +27,30 @@ document.getElementById('settingsButton').addEventListener(
 function setMessage(message) {
   const messageDiv = document.getElementById('message-div');
   messageDiv.innerHTML = message;
+}
+
+function DeleteIcon(props) {
+  return <img src={trashIcon} onClick={props.onClick} title="Delete"></img>
+}
+
+function EditIcon(props) {
+  return <img src={editIcon} onClick={props.onClick} title="Edit"></img>
+}
+
+function SaveIcon(props) {
+  return <img src={saveIcon} onClick={props.onClick} title="Save"></img>
+}
+
+function SaveEditIcon(props) {
+  return <img src={checkIcon} onClick={props.onClick} title="Save"></img>
+}
+
+function CancelIcon(props) {
+  return <img src={cancelIcon} onClick={props.onClick} title="Cancel"></img>
+}
+
+function SearchIcon(props) {
+  return <img src={searchIcon} onClick={props.onClick} title="Search"></img>
 }
 
 class TableRow extends React.Component {
@@ -64,10 +92,8 @@ class TableRow extends React.Component {
         <div class="col">{this.props.title}</div>
         <div class="col"><a href={this.props.url}>{this.props.url}</a></div>
         <div class="col-auto">
-          <i class="bi bi-trash mx-2" title="Delete"
-             onClick={() => this.props.deleteBookmark(this.props.id)}></i>
-          <i class="bi bi-pencil mx-2" title="Edit"
-             onClick={() => this.startEdit()}></i>
+          <DeleteIcon onClick={() => this.props.deleteBookmark(this.props.id)}/>
+          <EditIcon onClick={() => this.startEdit()}/>
         </div>
       </div>
     );
@@ -89,8 +115,8 @@ class TableRow extends React.Component {
           </input>
         </div>
         <div class="col-auto">
-          <i class="bi bi-x-lg mx-2" title="Cancel" onClick={() => this.cancelEdit()}></i>
-          <i class="bi bi-check-lg mx-2" title="Save" onClick={() => this.saveEdit()}></i>
+          <CancelIcon onClick={() => this.cancelEdit()}/>
+          <SaveEditIcon onClick={() => this.saveEdit()}/>
         </div>
       </div>
     );
@@ -145,8 +171,8 @@ class TableRowInput extends React.Component {
                            onChange={(e) => this.onChangeURL(e)}/>
         </div>
         <div class="col-auto">
-          <i class="bi bi-search mx-2" title="Search" onClick={() => this.startSearch()}></i>
-          <i class="bi bi-save mx-2"   title="Save"   onClick={() => this.saveBookmark()}></i>
+          <SearchIcon onClick={() => this.startSearch()}/>
+          <SaveIcon onClick={() => this.saveBookmark()}/>
         </div>
       </div>
     );
@@ -306,8 +332,8 @@ function BookmarkLists(props) {
                          onChange={(e) => setName(e.target.value)}/>
       </div>
       <div class="col-auto">
-        <i class="bi bi-search mx-2" title="Search" onClick={() => setSearchName(name)}></i>
-        <i class="bi bi-save mx-2"   title="Save"   onClick={() => saveBookmarkList()}></i>
+        <SearchIcon onClick={() => setSearchName(name)}/>
+        <SaveIcon onClick={() => saveBookmarkList()}/>
       </div>
     </div>
   ];
@@ -349,8 +375,8 @@ function BookmarkList(props) {
       <div class="row mt-1">
         <div class="col bookmark-list-name" onClick={() => props.selectBookmarkList()}>{props.listName}</div>
         <div class="col-auto">
-          <i class="bi bi-trash mx-2" title="Delete" onClick={props.deleteBookmarkList}></i>
-          <i class="bi bi-pencil mx-2" title="Edit" onClick={() => setEditable(true)}></i>
+          <DeleteIcon onClick={props.deleteBookmarkList}/>
+          <EditIcon onClick={() => setEditable(true)}/>
         </div>
       </div>
     );
@@ -363,8 +389,8 @@ function BookmarkList(props) {
           </input>
         </div>
         <div class="col-auto">
-          <i class="bi bi-x-lg mx-2" title="Cancel" onClick={() => setEditable(false)}></i>
-          <i class="bi bi-check-lg mx-2" title="Save" onClick={saveEditedBookmarkList}></i>
+          <CancelIcon onClick={() => setEditable(false)}/>
+          <SaveEditIcon onClick={saveEditedBookmarkList}/>
         </div>
       </div>
     );
